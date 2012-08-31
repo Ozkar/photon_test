@@ -1,0 +1,197 @@
+%style{:type => 'text/css'}
+  :sass
+    body
+      background: lightgray
+    body, h1, p, div, ul, li
+      margin: 0
+      padding: 0
+    h1
+      color: red
+    .clear
+      clear: both
+    #photon
+      position: absolute
+      top: 0
+      left: 0
+      z-index: 0
+      width: 100%
+      height: 100%
+      -webkit-perspective: 1000px
+      -moz-perspective: 1000px
+      -ms-perspective: 1000px
+      -o-perspective: 1000px
+      perspective: 1000px
+      -webkit-transform-style: preserve-3d
+      -moz-transform-style: preserve-3d
+      -ms-transform-style: preserve-3d
+      -o-transform-style: preserve-3d
+      transform-style: preserve-3d
+      #left
+        width: 50px
+        height: 50px
+        background-color: red
+        position: absolute
+        top: 140px
+        z-index: 500
+      #right
+        width: 50px
+        height: 50px
+        background-color: green
+        position: absolute
+        right: 50px
+        top: 140px
+        z-index: 500
+      #gallery-container
+        height: 900px 
+        position: absolute
+        display: table
+        left: 50px
+        list-style-type: none
+        display: block
+        position: absolute
+        top: 0
+        left: 0
+        z-index: 0
+        width: 100%
+        height: 100%
+        -webkit-transform-style: preserve-3d
+        -moz-transform-style: preserve-3d
+        -ms-transform-style: preserve-3d
+        -o-transform-style: preserve-3d
+        transform-style: preserve-3d
+        ul#gallery
+          list-style-type: none
+          display: block
+          position: absolute
+          top: 0
+          left: 0
+          z-index: 0
+          width: 100%
+          height: 100%
+          -webkit-transform-style: preserve-3d
+          -moz-transform-style: preserve-3d
+          -ms-transform-style: preserve-3d
+          -o-transform-style: preserve-3d
+          transform-style: preserve-3d
+          li 
+            position: absolute
+            left: 50%
+            top: 50%
+            z-index: 100
+            width: 400px
+            height: 400px
+            margin-left: -200px
+            margin-top: -250px
+            -webkit-transition: -webkit-transform .3s
+            -moz-transition: -moz-transform .3s
+            -ms-transition: -ms-transform .3s
+            -o-transition: -o-transform .3s
+            transition: transform .3s
+            pointer-events: none
+            img
+              display: block
+              width: 400px
+              height: 400px
+              border: 1px black solid
+
+:javascript
+  $(document).ready(function() {
+    $("h1").css('color', 'green');
+    function domToCss(property) {
+    	var css = property.replace(/([A-Z])/g, function (str, m1) {
+    		return '-' + m1.toLowerCase();
+    	}).replace(/^ms-/,'-ms-');
+
+    	return css;
+    }
+    domTransformProperty = Modernizr.prefixed('transform');
+  	cssTransformProperty = domToCss(domTransformProperty);
+    
+    // Starting Vars
+    var total_pics = $('ul#gallery li img').size();
+    var current_index = 0 ;//Math.round(total_pics / 2);
+    var pics = $('ul#gallery li');
+    
+    // Photon Vars
+    var light = new Photon.Light();
+    var faces = []
+    pics.each(function(){faces.push(new Photon.Face( $(this)[0], 0.3))}) 
+    
+    // Function to redraw lighting
+    function rerenderFaces(picFaces){
+      for(var i = 0; i < picFaces.length; i++) {
+        picFaces[i].render(light, true);
+      }
+    }
+    
+    // Function to reposition
+    function applyMovement(){
+      for(var i = 0; i < pics.length; i++) {
+        var offset = Math.abs(current_index - i)
+        var x = i == current_index ? 0 : (150 + (offset * 100)) * (i < current_index ? -1 : 1);
+        var y = i == current_index ? 0 : (80 + (offset * -5)) * (i < current_index ? 1 : -1);
+        var z = i == current_index ? 0 : -200;
+        $(pics[i]).css('transform', 'translateX(' + x + 'px) translateZ(' + z + 'px) rotateY(' + y + 'deg)');
+      }
+    }
+    
+    // Initial Positioning
+    applyMovement();
+    
+    // Initial Rendering
+    rerenderFaces(faces);
+    
+    
+    // Events
+    
+    $('body').mousemove(function(e){
+      $('span.x').text("x: " + e.pageX);
+      $('span.y').text("y: " + e.pageY);
+      light.moveTo(e.pageX, e.pageY, 100)
+      //$($('ul#gallery li img')[0]).css('transform', 'translateX(' + e.pageX +'px) rotateY(' + e.pageX + 'deg)');
+      
+      rerenderFaces(faces);
+      
+    });
+    
+    $('#left').click(function(e){
+      current_index = current_index == 0 ? 0 : (current_index - 1);
+      //$('#photon').css('transform', 'translateX(' + e.pageX +'px) rotateY(' + e.pageX + 'deg)');
+      applyMovement();
+      rerenderFaces(faces);
+    });
+    
+    $('#right').click(function(e){
+      current_index = current_index == (total_pics - 1) ? current_index : (current_index + 1);
+      //$('#photon').css('transform', 'translateX(' + e.pageX +'px) rotateY(' + e.pageX + 'deg)');
+      applyMovement();
+      rerenderFaces(faces);
+    });
+    
+  });
+
+-#    
+  %h1 testing
+
+  %span.x x: 0
+  %br/
+  %span.y y: 0
+
+#photon
+  #left
+  #gallery-container
+    %ul#gallery
+      %li
+        =image_tag('http://25.media.tumblr.com/tumblr_m9hbpdSJIX1qhy6c9o1_400.gif')
+      %li
+        =image_tag('https://i.chzbgr.com/completestore/12/8/29/qlP8l3S71U-vYsYYLpMwPg2.gif')
+      %li
+        =image_tag('https://i.chzbgr.com/completestore/12/8/28/tFHighsLRUSq5Kfg8WH5IQ2.gif')
+      %li
+        =image_tag('https://i.chzbgr.com/completestore/12/8/24/0vjLv3vTOUWW-1yg3on32A2.gif')  
+      %li
+        =image_tag('https://i.chzbgr.com/completestore/12/8/22/eVGTtmQ8kEeksxrCq0RaYQ2.gif')  
+    .clear
+  #right    
+      
+      
